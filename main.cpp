@@ -1,9 +1,18 @@
 #include <iostream>
+#include <conio.h>
+#include <windows.h>
 #include "TerminalRenderer.h"
-#include "Marker.h"
+#include "Types.h"
 #include "Constants.h"
 
 using namespace std;
+
+
+void drawBoard(TerminalRenderer * tr, Marker ** board, Position pos){
+		system("cls");
+		tr->displayBoard(board, pos);
+		Sleep(50);
+}
 
 int main(int argc, char** argv) {
 	
@@ -37,10 +46,38 @@ int main(int argc, char** argv) {
 		}
 	}
 	Theme * t = new Theme();	
+	Position pos;
+	TerminalRenderer * tr = new TerminalRenderer(t, true);
+	drawBoard(tr, board, pos);
 
-	TerminalRenderer * tr = new TerminalRenderer(t, false);
-	tr->displayBoard(board);
+	char c = 0;
+	while(c!=ENTER)
+    {
+        c = 0;
+        c=getch();
+
+        switch(c) {
+        case KEY_UP:
+			pos.row = ((pos.row+11)-1)%11;
+			drawBoard(tr, board, pos);
+            break;
+        case KEY_DOWN:
+			pos.row = ((pos.row+11)+1)%11;
+			drawBoard(tr, board, pos);
+            break;
+        case KEY_RIGHT:
+			pos.col = ((pos.col+11)+1)%11;
+			drawBoard(tr, board, pos);
+            break;
+        case KEY_LEFT:
+			pos.col = ((pos.col+11)-1)%11;
+			drawBoard(tr, board, pos);
+            break;
+        case ENTER:
+            break;
+        }
+    }
 	
-//	system("pause");
+	
 	return 0;
 }

@@ -1,7 +1,7 @@
 #ifndef THEME_H
 #define THEME_H
 #include <map>
-#include "Marker.h"
+#include "Types.h"
 #include "Constants.h"
 using namespace Colors;
 

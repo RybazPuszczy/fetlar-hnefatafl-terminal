@@ -15,4 +15,11 @@ inline std::ostream& operator<<(std::ostream& os, Marker m) {
     return os << static_cast<char>(m);
 }
 
+struct Position {
+    int row;
+    int col;
+
+    Position(int r = 0, int c = 0) : row(r), col(c) {}
+};
+
 #endif 

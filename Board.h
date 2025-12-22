@@ -1,6 +1,6 @@
 #ifndef BOARD_H
 #define BOARD_H
-#include "Marker.h"
+#include "Types.h"
 
 class Board
 {

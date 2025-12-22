@@ -3,7 +3,7 @@
 #include <iostream>
 #include <windows.h>
 
-#include "Marker.h"
+#include "Types.h"
 #include "Constants.h"
 #include "Theme.h"
 
@@ -64,12 +64,12 @@ TerminalRenderer::TerminalRenderer(
 	this->theme = theme;
 };
 
-void TerminalRenderer::displayHorizontalIndicator(char indicatorPos){
+void TerminalRenderer::displayHorizontalIndicator(Position indicatorPos){
 	cout << this->marginL;
-	for(char j=0;j<11;j++){
-		if(j==0) cout << " ";
+	for(char col=0;col<11;col++){
+		if(col==0) cout << " ";
 		cout << " ";
-		if(j==indicatorPos){
+		if(col==indicatorPos.col){
 			setColor(theme->indicatorColor);
 			cout << this->indicatorH;
 			setColor(theme->defualtColor);
@@ -84,34 +84,34 @@ void TerminalRenderer::displayHorizontalIndicator(char indicatorPos){
 void TerminalRenderer::displayBorder(char row){
 	cout << this->marginL;
 	setColor(theme->borderColor);
-	for(char j=0;j<11;j++){
-		if(j==0) cout << this->borderI;
+	for(char col=0;col<11;col++){
+		if(col==0) cout << this->borderI;
 		cout << this->borderH << this->borderH << this->borderH << this->borderI;
 	};
 	setColor(this->theme->defualtColor);
 	cout << this->marginR;
-	if(this->debug) cout << "<- intersection " << (int)row; // debug 2k
+	if(this->debug) cout << "<- horizontal border " << (int)row; // debug 2k
 	cout << endl;
 };
 
-void TerminalRenderer::displayFields(char row, Marker ** board, char indicatorPos){
+void TerminalRenderer::displayFields(char row, Marker ** board, Position indicatorPos){
 	cout << this->marginL;
-	for(char j=0;j<11;j++){
-		bool isFieldSelected = j==6&&row==4;
-		if(j==0){
-			setColor(theme->borderColor, 0);
+	for(char col=0;col<11;col++){
+		bool isFieldSelected = col==indicatorPos.col&&row==indicatorPos.row;
+		if(col==0){
+			setColor(theme->borderColor);
 			cout << this->borderV;
 		}
-		setColor(this->theme->markerColors[board[row][j]],isFieldSelected);
+		setColor(this->theme->markerColors[board[row][col]],isFieldSelected);
 		cout << " ";
-		cout << board[row][j];
+		cout << board[row][col];
 		cout << " ";
 		setColor(theme->borderColor);
 		cout << this->borderV;
 		setColor(theme->defualtColor);
 	};
 	cout << " ";
-	if(row==indicatorPos){
+	if(row==indicatorPos.row){
 		setColor(theme->indicatorColor);
 		cout << this->indicatorV;
 	}else{
@@ -123,7 +123,7 @@ void TerminalRenderer::displayFields(char row, Marker ** board, char indicatorPo
 	cout << endl;
 };
 
-void TerminalRenderer::displayBoard(Marker ** board){
+void TerminalRenderer::displayBoard(Marker ** board, Position indicatorPos){
 		for(char i=0;i<11;i++){
 		
 		if(i==0){
@@ -131,10 +131,10 @@ void TerminalRenderer::displayBoard(Marker ** board){
 			displayBorder(i);
 		};
 		
-		displayFields(i, board, 4);
+		displayFields(i, board, indicatorPos);
 		
 		displayBorder(i+1);		
-		if(i==10) displayHorizontalIndicator(6);
+		if(i==10) displayHorizontalIndicator(indicatorPos);
 		
 	};	
 };

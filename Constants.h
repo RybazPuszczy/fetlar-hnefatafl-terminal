@@ -1,6 +1,13 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+#define KEY_UP 72
+#define KEY_DOWN 80
+#define KEY_LEFT 75
+#define KEY_RIGHT 77
+#define ENTER 13
+#define ESC 27
+
 namespace Colors {
 	const char BLACK	= 0;
     const char GRAY		= 8;
