@@ -7,17 +7,35 @@
 
 using namespace std;
 
+void ClearScreen(){	
+	COORD cursorPosition = { 0,0 };
+	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), cursorPosition);
+}; // https://stackoverflow.com/questions/34842526/update-console-without-flickering-c
+
+
+void ShowConsoleCursor(bool showFlag)
+{
+    HANDLE out = GetStdHandle(STD_OUTPUT_HANDLE);
+	
+	CONSOLE_CURSOR_INFO cursorInfo;
+
+    GetConsoleCursorInfo(out, &cursorInfo);
+	cursorInfo.bVisible = showFlag; // set the cursor visibility
+	SetConsoleCursorInfo(out, &cursorInfo);
+    
+}; // https://stackoverflow.com/questions/18028808/remove-blinking-underscore-on-console-cmd-prompt
 
 void drawBoard(TerminalRenderer * tr, Marker ** board, Position pos){
-		system("cls");
+		ClearScreen();
 		tr->displayBoard(board, pos);
 		Sleep(50);
 }
 
 int main(int argc, char** argv) {
 	
-//	cout << endl << endl;
-	
+	ShowConsoleCursor(false);
+	cout << SetCursor(NULL);
+		
 	Marker ** board;
 	board = new Marker * [11];
 	for(int i=0;i<11;i++){
@@ -47,11 +65,11 @@ int main(int argc, char** argv) {
 	}
 	Theme * t = new Theme();	
 	Position pos;
-	TerminalRenderer * tr = new TerminalRenderer(t, true);
+	TerminalRenderer * tr = new TerminalRenderer(t, false);
 	drawBoard(tr, board, pos);
 
 	char c = 0;
-	while(c!=ENTER)
+	while(c!=ESC)
     {
         c = 0;
         c=getch();
@@ -75,6 +93,8 @@ int main(int argc, char** argv) {
             break;
         case ENTER:
             break;
+        case ESC:
+        	break;
         }
     }
 	

@@ -15,7 +15,7 @@ struct Theme
 		this->markerColors[Marker::King] 		= YELLOW;
 		this->markerColors[Marker::Defender]	= DARKER(this->markerColors[Marker::King]);
 		this->markerColors[Marker::Attacker]	= DARKER(RED);
-		this->markerColors[Marker::Empty]		= BLACK;
+		this->markerColors[Marker::Empty]		= WHITE;
 		this->markerColors[Marker::Throne]		= WHITE;
 		this->markerColors[Marker::Corner]		= CYAN;
 		
