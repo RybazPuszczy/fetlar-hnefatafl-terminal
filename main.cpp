@@ -1,6 +1,7 @@
 #include <iostream>
 #include "TerminalRenderer.h"
 #include "Marker.h"
+#include "Constants.h"
 
 using namespace std;
 
@@ -35,11 +36,11 @@ int main(int argc, char** argv) {
 			board[i][j] = Marker::Empty;
 		}
 	}
-	bool debug = true;
-//	cin >> debug;
-	TerminalRenderer * tr = new TerminalRenderer(debug);
+	Theme * t = new Theme();	
+
+	TerminalRenderer * tr = new TerminalRenderer(t, false);
 	tr->displayBoard(board);
 	
-	system("pause");
+//	system("pause");
 	return 0;
 }
