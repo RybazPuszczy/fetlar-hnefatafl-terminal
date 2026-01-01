@@ -7,9 +7,9 @@ using namespace Colors;
 
 struct Theme
 {
-	std::map<Marker, char> markerColors;
+	std::map<Marker, int> markerColors;
 	
-	char borderColor, indicatorColor, defualtColor;
+	int borderColor, indicatorColor, defualtColor;
 	
 	Theme(){
 		this->markerColors[Marker::King] 		= YELLOW;

@@ -11,9 +11,9 @@ class TerminalRenderer
 		std::string marginL, marginR;
 		bool debug;
 		Theme * theme;
-		void setColor(char color);
-		void setColor(char color, bool highlight);
-		void reverseHighlight(char color);
+		void setColor(int color);
+		void setColor(int color, bool highlight);
+		void reverseHighlight(int color);
 		void displayHorizontalIndicator(Position indicatorPos);
 		void displayBorder(char row);
 		void displayFields(char row, Marker ** board, Position indicatorPos);

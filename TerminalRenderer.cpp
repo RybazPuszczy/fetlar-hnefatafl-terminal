@@ -13,14 +13,14 @@ using namespace std;
 HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
 // ============================== members ==============================
-void TerminalRenderer::setColor(char color){ this->setColor(color, 0); }
+void TerminalRenderer::setColor(int color){ this->setColor(color, 0); }
 
-void TerminalRenderer::setColor(char color, bool highlight){
+void TerminalRenderer::setColor(int color, bool highlight){
 	if(highlight) this->reverseHighlight(color);
 	else SetConsoleTextAttribute(hConsole, Colors::BACKGROUND(color,highlight*Colors::DARKER(Colors::CYAN)));
 }
 
-void TerminalRenderer::reverseHighlight(char color){
+void TerminalRenderer::reverseHighlight(int color){
 	SetConsoleTextAttribute(hConsole, Colors::BACKGROUND(Colors::BLACK,color));
 }
 
