@@ -74,8 +74,9 @@ void Game::run(){
 			redrawBoard();
             break;
         case ENTER:
+        	this->selectedPos = this->indicatorPos;
         	redrawBoard();
-        	std::cout << "Selected: \"" << this->board[indicatorPos.col][indicatorPos.row] << "\" at column " << this->indicatorPos.col << ", row " << this->indicatorPos.row << "  "; 
+        	std::cout << "Selected: \"" << this->board[selectedPos.col][selectedPos.row] << "\" at column " << this->selectedPos.col << ", row " << this->selectedPos.row << "  "; 
             break;
         case ESC:
         	break;
@@ -84,5 +85,7 @@ void Game::run(){
 }
 
 Game::~Game(){
-	
+	delete[] theme;
+	for(int i=0;i<11;i++) delete[] board[i];
+	delete[] board;
 }

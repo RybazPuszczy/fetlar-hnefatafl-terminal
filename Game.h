@@ -17,10 +17,10 @@ class Game
 		Marker ** board;
 		Theme * theme;
 		TerminalRenderer * tr;
-		Position indicatorPos;
-		Position selectedPos;
-		bool attackerTurn;
-		bool debugMode;
+		Position indicatorPos = { 0, 0 };
+		Position selectedPos = {-1, -1};
+		bool attackerTurn = true;
+		bool debugMode = false;
 		
 		void initBoard();
 		void getInput();
