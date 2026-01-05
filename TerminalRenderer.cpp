@@ -13,6 +13,11 @@ using namespace std;
 HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
 // ============================== members ==============================
+void TerminalRenderer::clearScreen(){
+	COORD cursorPosition = { 0,0 };
+	SetConsoleCursorPosition(hConsole, cursorPosition);
+}; // https://stackoverflow.com/questions/34842526/update-console-without-flickering-c
+
 void TerminalRenderer::setColor(int color){ this->setColor(color, 0); }
 
 void TerminalRenderer::setColor(int color, bool highlight){
@@ -24,17 +29,11 @@ void TerminalRenderer::reverseHighlight(int color){
 	SetConsoleTextAttribute(hConsole, Colors::BACKGROUND(Colors::BLACK,color));
 }
 
-TerminalRenderer::TerminalRenderer(){
-	this->borderH = '-';
-	this->borderV = ':';
-	this->borderI = '+';
-	this->indicatorH = '^';
-	this->indicatorV = '<';
-	this->marginL = "\t";
-	this->marginR = "\t\t";
-	this->debug = false;
-	this->theme = new Theme();
-};
+TerminalRenderer::TerminalRenderer() : 
+	borderH('-'), borderV(':'), borderI('+'), 
+	indicatorH('^'), indicatorV('<'), marginL("\t"), marginR("\t\t"),
+	debug(false), theme(new Theme()) 
+	{};
 
 TerminalRenderer::TerminalRenderer(bool debug) : TerminalRenderer::TerminalRenderer(){
 	this->debug = debug;

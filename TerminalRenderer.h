@@ -17,7 +17,6 @@ class TerminalRenderer
 		void displayHorizontalIndicator(Position indicatorPos);
 		void displayBorder(char row);
 		void displayFields(char row, Marker ** board, Position indicatorPos);
-	
 	public:
 		TerminalRenderer();
 		TerminalRenderer(Theme * theme);
@@ -25,6 +24,7 @@ class TerminalRenderer
 		TerminalRenderer(Theme * theme, bool debug);
 		TerminalRenderer(char borderH, char borderV, char borderI, char indicatorH, char indicatorV, std::string marginL, std::string marginR, Theme * theme, bool debug);
 	
+		void clearScreen();
 		void displayBoard(Marker ** board, Position indicatorPos);
 };
 
