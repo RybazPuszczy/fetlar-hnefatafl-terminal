@@ -29,46 +29,34 @@ void TerminalRenderer::reverseHighlight(int color){
 	SetConsoleTextAttribute(hConsole, Colors::BACKGROUND(Colors::BLACK,color));
 }
 
-TerminalRenderer::TerminalRenderer() : 
-	borderH('-'), borderV(':'), borderI('+'), 
-	indicatorH('^'), indicatorV('<'), marginL("\t"), marginR("\t\t"),
-	debug(false), theme(new Theme()) 
-	{};
+TerminalRenderer::TerminalRenderer(Theme * theme, bool debug) 
+	: debug(debug){
+	this->theme = (theme!=nullptr)? theme : new Theme();
+}
 
-TerminalRenderer::TerminalRenderer(bool debug) : TerminalRenderer::TerminalRenderer(){
-	this->debug = debug;
-};
-
-TerminalRenderer::TerminalRenderer(Theme * theme) : TerminalRenderer::TerminalRenderer(){
-	this->theme = theme;
-};
-
-TerminalRenderer::TerminalRenderer(Theme * theme, bool debug) : TerminalRenderer::TerminalRenderer(){
-	this->debug = debug;
-	this->theme = theme;
-};
+TerminalRenderer::TerminalRenderer(bool debug) 
+	: TerminalRenderer(nullptr, debug) {}
+	
 
 TerminalRenderer::TerminalRenderer(
-		char borderH, char borderV, char borderI, char indicatorH, 
-		char indicatorV, string marginL, string marginR, Theme * theme, bool debug
-	){
-	this->borderH = borderH;
-	this->borderV = borderV;
-	this->borderI = borderI;
-	this->indicatorH = indicatorH;
-	this->indicatorV = indicatorV;
-	this->marginL = marginL;
-	this->marginR = marginR;
-	this->debug = debug;
-	this->theme = theme;
-};
+		char borderH, char borderV, char borderI, 
+		char indicatorH, char indicatorV, 
+		string marginL, string marginR, 
+		Theme * theme, bool debug
+	) 
+	: borderH(borderH), borderV(borderV), borderI(borderI), 
+	indicatorH(indicatorH), indicatorV(indicatorV), 
+	  marginL(marginL), marginR(marginR), 
+	  debug(debug){
+	this->theme = (theme != nullptr) ? theme : new Theme();
+}
 
-void TerminalRenderer::displayHorizontalIndicator(Position indicatorPos){
+void TerminalRenderer::displayHorizontalIndicator(){
 	cout << this->marginL;
 	for(char col=0;col<11;col++){
 		if(col==0) cout << " ";
 		cout << " ";
-		if(col==indicatorPos.col){
+		if(col==this->indicatorPosRef->col){
 			setColor(theme->indicatorColor);
 			cout << this->indicatorH;
 			setColor(theme->defualtColor);
@@ -89,28 +77,33 @@ void TerminalRenderer::displayBorder(char row){
 	};
 	setColor(this->theme->defualtColor);
 	cout << this->marginR;
-	if(this->debug) cout << "<- horizontal border " << (int)row; // debug 2k
+	if(this->debug && this->debugCallbackRef) this->debugCallbackRef(2 * row);
 	cout << endl;
 };
 
-void TerminalRenderer::displayFields(char row, Marker ** board, Position indicatorPos){
+void TerminalRenderer::displayFields(char row){
 	cout << this->marginL;
 	for(char col=0;col<11;col++){
-		bool isFieldSelected = col==indicatorPos.col&&row==indicatorPos.row;
+		bool isFieldIndicated = col==this->indicatorPosRef->col &&row==this->indicatorPosRef->row;
+		bool isFieldSelected = col==this->selectedPosRef->col &&row==this->selectedPosRef->row;
 		if(col==0){
 			setColor(theme->borderColor);
 			cout << this->borderV;
 		}
-		setColor(this->theme->markerColors[board[row][col]],isFieldSelected);
+		if(this->boardRef[row][col] == Marker::Empty){		
+			setColor(this->theme->markerColors[(*this->attackerTurnRef)? Marker::Attacker : Marker::Defender], isFieldIndicated || isFieldSelected);
+		}else{
+			setColor(this->theme->markerColors[this->boardRef[row][col]], isFieldIndicated || isFieldSelected);
+		}
 		cout << " ";
-		cout << board[row][col];
+		cout << this->boardRef[row][col];
 		cout << " ";
 		setColor(theme->borderColor);
 		cout << this->borderV;
 		setColor(theme->defualtColor);
 	};
 	cout << " ";
-	if(row==indicatorPos.row){
+	if(row==this->indicatorPosRef->row){
 		setColor(theme->indicatorColor);
 		cout << this->indicatorV;
 	}else{
@@ -118,22 +111,28 @@ void TerminalRenderer::displayFields(char row, Marker ** board, Position indicat
 	}
 	setColor(theme->defualtColor);
 	cout << this->marginR;
-	if(this->debug) cout << "<- row " << (int)row; // debug 2k+1
+	if(this->debug) this->debugCallbackRef(2*row + 1);
 	cout << endl;
 };
 
-void TerminalRenderer::displayBoard(Marker ** board, Position indicatorPos){
+void TerminalRenderer::displayBoard(){
 		for(char i=0;i<11;i++){
 		
-		if(i==0){
-			// displayHorizontalIndicator(6,'v');
-			displayBorder(i);
-		};
+		if(i==0) displayBorder(i);
 		
-		displayFields(i, board, indicatorPos);
+		displayFields(i);
 		
 		displayBorder(i+1);		
-		if(i==10) displayHorizontalIndicator(indicatorPos);
+
+		if(i==10) displayHorizontalIndicator();
 		
 	};	
 };
+
+void TerminalRenderer::setRefs(Marker ** board, const Position * indicatorPos, const Position * selectedPos, const bool * attackerTurn, std::function<void(int)> debugCallback){
+	this->boardRef = board;
+	this->indicatorPosRef = indicatorPos;
+	this->selectedPosRef = selectedPos;
+	this->attackerTurnRef = attackerTurn;
+	this->debugCallbackRef = debugCallback;
+}

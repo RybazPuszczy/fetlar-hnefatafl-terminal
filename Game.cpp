@@ -2,21 +2,36 @@
 #include <windows.h>
 #include <conio.h>
 
-
 void Game::redrawBoard(){
 	this->tr->clearScreen();
-	this->tr->displayBoard(this->board, this->indicatorPos);
+	this->tr->displayBoard();
 	Sleep(50);
 }
 
+void Game::debugCallback(int index){
+	switch(index){
+		case 0: std::cout << "indicatorPos: {" << this->indicatorPos.col << ", " << this->indicatorPos.row << "}"; break;
+		case 1: std::cout << "selectedPos: {" << this->selectedPos.col << ", " << this->selectedPos.row << "}"; break;
+		// ... Put some other debug values here
+	};
+	std::cout << "                           "; // to "clear" after redraw
+}
+
 Game::Game(Theme* theme, bool debugMode) 
-    : indicatorPos({0,0}), attackerTurn(true), debugMode(debugMode){
+    : indicatorPos(Position(0,0)), attackerTurn(true), debugMode(debugMode){
 
 	this->theme = (theme!=nullptr) ? theme : new Theme();
     this->tr = new TerminalRenderer(this->debugMode);
+    
+    std::function<void(int)> callbackRef = nullptr;
+    
+    if(this->debugMode) callbackRef = [this](int index) { this->debugCallback(index); };
+    
     initBoard();
     
+    this->tr->setRefs(this->board, &this->indicatorPos, &this->selectedPos, &this->attackerTurn, callbackRef);
 }
+
 void Game::initBoard(){
 	
 	this->board = new Marker * [11];
@@ -74,11 +89,23 @@ void Game::run(){
 			redrawBoard();
             break;
         case ENTER:
-        	this->selectedPos = this->indicatorPos;
+        	if(this->isSelectionEmpty()){
+	        	this->selectedPos = this->indicatorPos;
+	        	std::cout << "Selected: \"" << this->board[selectedPos.col][selectedPos.row] << "\" at column " << this->selectedPos.col << ", row " << this->selectedPos.row << "\t\t\n"; 
+			}else{				
+	        	std::cout << "Moved: \"" << this->board[selectedPos.col][selectedPos.row] << "\" to column " << this->indicatorPos.col << ", row " << this->indicatorPos.row << "\t\t\n"; 
+	        	this->selectedPos= Position(-1,-1);
+        		this->attackerTurn = !this->attackerTurn;
+			}
+        	std::cout << "Now it's " << ((attackerTurn) ? "attackers'" : "defenders'") << " turn."; 
         	redrawBoard();
-        	std::cout << "Selected: \"" << this->board[selectedPos.col][selectedPos.row] << "\" at column " << this->selectedPos.col << ", row " << this->selectedPos.row << "  "; 
             break;
         case ESC:
+        	if(!this->isSelectionEmpty()) {
+        		this->selectedPos= Position(-1,-1);
+        		c = 0;
+        		redrawBoard();
+			}
         	break;
         }
     }

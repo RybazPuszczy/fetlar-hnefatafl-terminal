@@ -3,29 +3,49 @@
 #include "Types.h"
 #include "Constants.h"
 #include "Theme.h"
+#include <functional>
 
 class TerminalRenderer
 {
 	private:
-		char borderH, borderV, borderI, indicatorH, indicatorV;
-		std::string marginL, marginR;
-		bool debug;
-		Theme * theme;
+		// Symbols
+		char 
+			borderH = '-',
+			borderV = ':',
+			borderI = '+',
+			indicatorH = '^',
+			indicatorV = '<';
+		std::string 
+			marginL = "\t",
+			marginR = "\t\t";
+		
+		bool debug = false;
+		Theme * theme = nullptr;
+		
+		// game state refs		
+		Marker ** boardRef = nullptr;
+		const Position * indicatorPosRef = nullptr;
+		const Position * selectedPosRef = nullptr;
+		const bool * attackerTurnRef = nullptr;
+		std::function<void(int)> debugCallbackRef;
+		
 		void setColor(int color);
 		void setColor(int color, bool highlight);
 		void reverseHighlight(int color);
-		void displayHorizontalIndicator(Position indicatorPos);
+		void displayHorizontalIndicator();
 		void displayBorder(char row);
-		void displayFields(char row, Marker ** board, Position indicatorPos);
-	public:
-		TerminalRenderer();
-		TerminalRenderer(Theme * theme);
-		TerminalRenderer(bool debug);
-		TerminalRenderer(Theme * theme, bool debug);
-		TerminalRenderer(char borderH, char borderV, char borderI, char indicatorH, char indicatorV, std::string marginL, std::string marginR, Theme * theme, bool debug);
+		void displayFields(char row);
 	
+	public:
+		void setRefs(Marker ** board, const Position * indicatorPos, const Position * selectedPos, const bool * attackerTurn, std::function<void(int)> debugCallback);
+		
+		TerminalRenderer(Theme * theme = nullptr, bool debug = false);
+		TerminalRenderer(bool debug);
+		
+		TerminalRenderer(char borderH, char borderV, char borderI, char indicatorH, char indicatorV, 
+							std::string marginL, std::string marginR, Theme * theme = nullptr, bool debug = false);
 		void clearScreen();
-		void displayBoard(Marker ** board, Position indicatorPos);
+		void displayBoard();
 };
 
 #endif

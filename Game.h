@@ -12,13 +12,15 @@ class Game
 		Game(Theme * theme = nullptr, bool debugMode = false);
 		~Game();
 		void run();
+	protected:
 		void debugCallback(int index);
 	private:
 		Marker ** board;
 		Theme * theme;
 		TerminalRenderer * tr;
-		Position indicatorPos = { 0, 0 };
-		Position selectedPos = {-1, -1};
+		Position indicatorPos = Position(0,0);
+		Position selectedPos = Position(-1,-1);
+		inline bool isSelectionEmpty() const { return selectedPos==Position(-1,-1); };
 		bool attackerTurn = true;
 		bool debugMode = false;
 		
