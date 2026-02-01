@@ -92,7 +92,7 @@ bool Game::areHostile(Marker m1, Marker m2) const{ // for checking for captures
 	return (
 		isAttacker(m1) && isDefender(m2) 
 		|| isDefender(m1) && isAttacker(m2) 
-		|| ((m1==Marker::Throne xor m2==Marker::Throne) || (m1==Marker::Wall xor m2==Marker::Wall)) && ( isPiece(m1) xor isPiece(m2) ) // walls and throne are hostile and take part in captures too.
+		|| (isRestricted(m1) xor isRestricted(m2) || (m1==Marker::Wall xor m2==Marker::Wall)) && ( isPiece(m1) xor isPiece(m2) ) // walls, corners and throne are hostile and take part in captures too.
 	);
 }
 
@@ -142,7 +142,6 @@ void Game::handleSelectionInput(char c){
 			);
         	break;
         case ESC:
-//			this->gameState = GameState::Aborted;
 			this->gameState = GameState::ExitPrompt;
 			redrawBoard("","Are you sure you want to quit? (Y/N)");
 			break;
@@ -192,10 +191,11 @@ void Game::handleMoveInput(char c){
 			redrawBoard();
     		break;
 	}
+	//moves indicator back if move to the field is illegal. With sleep in redraw it makes a nice bounce-back effect.
 	if(!(
 		this->indicatorPos == this->selectedPos 
-		|| this->getMarker(this->indicatorPos)==Marker::Empty
-		|| ( (this->getMarker(this->indicatorPos)==Marker::Throne || this->getMarker(this->indicatorPos)==Marker::Corner) && this->getMarker(this->selectedPos)==Marker::King )
+		|| isEmpty(this->getMarker(this->indicatorPos))
+		|| isRestricted(this->getMarker(this->indicatorPos)) && isKing(this->getMarker(this->selectedPos))
 	)) switch(c){
 		case KEY_UP: handleMoveInput(KEY_DOWN); break;
 		case KEY_DOWN: handleMoveInput(KEY_UP); break;

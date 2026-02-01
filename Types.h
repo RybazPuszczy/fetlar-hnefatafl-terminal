@@ -12,19 +12,26 @@ enum class GameState {
 
 enum class Marker : char {
 	King 	= 'K',
-	Defender = 'd', // or 2 displays a ":)" (at least in my terminal)
+	Defender = 'd', // or 2 displays a ":)" (at least in my terminal (indeed not everywhere...))
 	Attacker = 'a',
 	Empty = ' ',
 	Throne = '#',
     Corner  = '~',
-    Wall  = 'W'
+    Wall  = 'W',
+    Captured = 'x'
 };
 
 inline bool isAttacker(Marker m) { return m == Marker::Attacker; }
 
 inline bool isDefender(Marker m) { return m == Marker::King || m == Marker::Defender; }
 
+inline bool isKing(Marker m) { return m == Marker::King; }
+
+inline bool isRestricted(Marker m) { return m == Marker::Throne || m == Marker::Corner; } //true for markers marking king-only fields.
+
 inline bool isPiece(Marker m) { return isAttacker(m) || isDefender(m); }
+
+inline bool isEmpty(Marker m) { return m == Marker::Empty || m == Marker::Captured; }
 
 inline std::ostream& operator<<(std::ostream& os, Marker m) {
     return os << static_cast<char>(m);
@@ -47,7 +54,6 @@ struct Position {
     Position operator-(const Position& other) const {
         return Position(this->row-other.row, this->col-other.col);
     }
-
     
 };
 
