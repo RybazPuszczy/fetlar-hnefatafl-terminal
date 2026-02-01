@@ -18,20 +18,18 @@ void ShowConsoleCursor(bool showFlag)
 }; // https://stackoverflow.com/questions/18028808/remove-blinking-underscore-on-console-cmd-prompt
 
 int main(int argc, char** argv) {
-	
-	
+
 	HCURSOR hCursor = GetCursor();
 	
 	ShowConsoleCursor(false);
 	SetCursor(NULL);
+	system("cls");	
 	
 	Game * game = new Game(nullptr);
 	game->run();
 		
 	ShowConsoleCursor(true);
 	SetCursor(hCursor);
-	
-	system("pause");
 	
 	return 0;
 }

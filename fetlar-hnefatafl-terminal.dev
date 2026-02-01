@@ -29,7 +29,7 @@ IncludeVersionInfo=0
 SupportXPThemes=0
 CompilerSet=1
 CompilerSettings=0000000000000000001000000
-UnitCount=8
+UnitCount=11
 
 [VersionInfo]
 Major=1
@@ -91,21 +91,21 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit11]
-FileName=TerminalTheme.cpp
+FileName=README.md
 CompileCpp=1
 Folder=
-Compile=1
-Link=1
+Compile=0
+Link=0
 Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
 [Unit10]
-FileName=TerminalTheme.cpp
+FileName=LICENSE
 CompileCpp=1
 Folder=
-Compile=1
-Link=1
+Compile=0
+Link=0
 Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
@@ -146,6 +146,15 @@ CompileCpp=1
 Folder=
 Compile=1
 Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit9]
+FileName=.gitignore
+Folder=
+Compile=0
+Link=0
 Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
