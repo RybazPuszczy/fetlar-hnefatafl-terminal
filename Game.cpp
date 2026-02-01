@@ -108,6 +108,18 @@ bool Game::canPlayerMove(bool attacker) const{
 	return false;	
 }
 
+void Game::tryEscape(){
+	if(
+		isKing(this->getMarker(Position(0,0))) ||  
+		isKing(this->getMarker(Position(0,10))) ||  
+		isKing(this->getMarker(Position(10,0))) ||  
+		isKing(this->getMarker(Position(10,10)))
+	){
+		this->gameState = GameState::Resolved;
+		this->redrawBoard("THE KING HAS ESCAPED.","Defenders won!");		
+	}
+} 
+
 void Game::tryCapture(Position pos){
 	Position NESW[4] = {Position(-1,0), Position(0,1), Position(1,0), Position(0,-1)};
 	for(int i=0; i<4; i++){
@@ -217,6 +229,7 @@ void Game::handleMoveInput(char c){
 			this->cleanupCorpses();
 			this->moveMarker(this->selectedPos,this->indicatorPos);
 			this->tryCapture(this->indicatorPos);
+			this->tryEscape();
 			if(this->gameState==GameState::Resolved) break;
         	this->selectedPos = Position(-1,-1);
     		this->attackerTurn = !this->attackerTurn; 

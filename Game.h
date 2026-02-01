@@ -41,6 +41,7 @@ class Game
 		void setMarker(Marker m, Position pos);
 		void moveMarker(Position from, Position to);
 		
+		void tryEscape();
 		void tryCapture(Position pos);
 		void cleanupCorpses();
 		
