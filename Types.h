@@ -6,6 +6,8 @@ enum class GameState {
 	AwaitingSelection,
 	AwaitingMove,
 	ExitPrompt,
+	ResetPrompt,
+	Reset,
 	Aborted,
 	Resolved
 };

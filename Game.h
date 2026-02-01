@@ -17,7 +17,7 @@ class Game
 		void debugCallback(int index);
 		void controlsCallback(int index);
 	private:
-		GameState gameState;
+		GameState gameState = GameState::AwaitingSelection;
 		Marker ** board;
 		Theme * theme;
 		TerminalRenderer * tr;
@@ -50,6 +50,7 @@ class Game
 	    void handleSelectionInput(char c);
 	    void handleMoveInput(char c);
 	    void handleExitPromptInput(char c);
+	    void handleResetPromptInput(char c);
 		void redrawBoard(const std::string& comment1 = "", const std::string& comment2 = "");
 		
 };

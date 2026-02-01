@@ -31,5 +31,7 @@ int main(int argc, char** argv) {
 	ShowConsoleCursor(true);
 	SetCursor(hCursor);
 	
+	system("pause");
+	
 	return 0;
 }

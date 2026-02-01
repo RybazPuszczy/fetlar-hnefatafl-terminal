@@ -37,6 +37,7 @@ class TerminalRenderer
 	
 	public:
 		void setRefs(Marker ** board, const Position * indicatorPos, const Position * selectedPos, const bool * attackerTurn, std::function<void(int)>& rightsideCallback);
+		void setRefs(Marker ** board, const Position * indicatorPos, const Position * selectedPos, const bool * attackerTurn);
 		
 		TerminalRenderer(Theme * theme = nullptr);
 //		TerminalRenderer();

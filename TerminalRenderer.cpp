@@ -133,11 +133,15 @@ void TerminalRenderer::displayBoard(const string& comment1, const string& commen
 	cout << "\n";		
 };
 
-void TerminalRenderer::setRefs(Marker ** board, const Position * indicatorPos, const Position * selectedPos, const bool * attackerTurn, std::function<void(int)>& rightsideCallback){
+void TerminalRenderer::setRefs(Marker ** board, const Position * indicatorPos, const Position * selectedPos, const bool * attackerTurn){
 	this->boardRef = board;
 	this->indicatorPosRef = indicatorPos;
 	this->selectedPosRef = selectedPos;
 	this->attackerTurnRef = attackerTurn;
+}
+
+void TerminalRenderer::setRefs(Marker ** board, const Position * indicatorPos, const Position * selectedPos, const bool * attackerTurn, std::function<void(int)>& rightsideCallback){
+	this->setRefs(board, indicatorPos, selectedPos, attackerTurn);
 	this->rightsideCallbackRef = rightsideCallback;
 }
 

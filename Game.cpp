@@ -22,9 +22,10 @@ void Game::controlsCallback(int index){
 		case 0: std::cout << "Welcome to Fetlar Hnefatafl"; break;
 		case 1: std::cout << "==========================="; break;
 		case 2: std::cout << "Controls:"; break;
-		case 3: std::cout << "ARROWS - move indicator"; break;
-		case 4: std::cout << "ENTER - confirm selection"; break;
-		case 5: std::cout << "ESC - cancel selection / exit"; break;
+		case 3: std::cout << "ARROWS/WSAD - move indicator"; break;
+		case 4: std::cout << "ENTER/SPACE - confirm selection"; break;
+		case 5: std::cout << "ESC - cancel selection / exit the game "; break;
+		case 6: std::cout << "R - cancel selection / reset the game"; break;
 		
 	};
 }
@@ -130,7 +131,7 @@ void Game::tryEscape(){
 		isKing(this->getMarker(Position(10,10)))
 	){
 		this->gameState = GameState::Resolved;
-		this->redrawBoard("THE KING HAS ESCAPED.","Defenders won!");		
+		this->redrawBoard("THE KING HAS ESCAPED. Defenders won!");		
 	}
 } 
 
@@ -145,7 +146,7 @@ void Game::tryCapture(Position pos){
 				&& this->areHostile(this->getMarker(pos+NESW[i]), this->getMarker(pos+NESW[i]+NESW[3]))
 			){
 				this->gameState = GameState::Resolved;
-				this->redrawBoard("THE KING HAS BEEN CAPTURED.","Attackers won!");
+				this->redrawBoard("THE KING HAS BEEN CAPTURED. Attackers won!");
 			}
 		}else if(
 			isPiece(this->getMarker(pos+NESW[i]))
@@ -172,28 +173,42 @@ void Game::handleInput(){
 			break;
 		case GameState::ExitPrompt:
 			this->handleExitPromptInput(c);
+			break;
+		case GameState::ResetPrompt:
+		case GameState::Resolved:
+			this->handleResetPromptInput(c);
+			break;
     }
 }
 
 void Game::handleSelectionInput(char c){
 	switch(c){
+		case 'w':
+		case 'W':
 		case KEY_UP:
 			this->indicatorPos = wrap(this->indicatorPos+Position(-1,0));
 			this->redrawBoard();
 			break;
+        case 's':
+        case 'S':
         case KEY_DOWN:
 			this->indicatorPos = wrap(this->indicatorPos+Position(1,0));
 			this->redrawBoard();
 			break;
+        case 'd':
+        case 'D':
         case KEY_RIGHT:
 			this->indicatorPos = wrap(this->indicatorPos+Position(0,1));
 			this->redrawBoard();
 			break;
+        case 'a':
+        case 'A':
         case KEY_LEFT:
 			this->indicatorPos = wrap(this->indicatorPos+Position(0,-1));
 			this->redrawBoard();
 			break;
         case ENTER:
+        case ' ':
         	if(
 				! (isAttacker(this->getMarker(this->indicatorPos)) && this->attackerTurn)
 				&& ! (isDefender(this->getMarker(this->indicatorPos)) && !this->attackerTurn)
@@ -207,31 +222,45 @@ void Game::handleSelectionInput(char c){
 			this->gameState = GameState::ExitPrompt;
 			this->redrawBoard("","Are you sure you want to quit? (Y/N)");
 			break;
+		case 'R':
+		case 'r':
+			this->gameState = GameState::ResetPrompt;
+			this->redrawBoard("","Are you sure you want to reset the game? (Y/N)");
+			break;
 	}
             
 };
 void Game::handleMoveInput(char c){
 	switch(c){
+		case 'W':
+		case 'w':
 		case KEY_UP:
 			this->indicatorPos.col = this->selectedPos.col;
 			this->indicatorPos = this->indicatorPos+Position(-1,0);
 			this->redrawBoard();
             break;
+        case 's':
+        case 'S':
         case KEY_DOWN:
 			this->indicatorPos.col = this->selectedPos.col;
 			this->indicatorPos = this->indicatorPos+Position(1,0);
 			this->redrawBoard();
             break;
+        case 'd':
+        case 'D':
         case KEY_RIGHT:
 			this->indicatorPos.row = this->selectedPos.row;
 			this->indicatorPos = this->indicatorPos+Position(0,1);
 			this->redrawBoard();
             break;
+        case 'a':
+        case 'A':
         case KEY_LEFT:
 			this->indicatorPos.row = this->selectedPos.row;
 			this->indicatorPos = this->indicatorPos+Position(0,-1);
 			this->redrawBoard();
 			break;
+		case ' ':
 		case ENTER:
 			if(selectedPos==indicatorPos) break;
 			this->cleanupCorpses();
@@ -247,6 +276,8 @@ void Game::handleMoveInput(char c){
 			);
         	break;
         case ESC:
+        case 'R':
+		case 'r':
     		this->selectedPos = Position(-1,-1);
     		this->gameState = GameState::AwaitingSelection;
 			this->redrawBoard();
@@ -281,19 +312,52 @@ void Game::handleExitPromptInput(char c){
 	}
 };
 
+void Game::handleResetPromptInput(char c){
+	switch(c){
+		case 'Y':
+		case 'y':
+		case ENTER:
+			this->redrawBoard(""," ");
+			this->gameState=GameState::Reset;
+			break;
+		case 'N':
+		case 'n':
+		case ESC:
+			if(this->gameState==GameState::Resolved) this->gameState=GameState::Aborted; else this->gameState=GameState::AwaitingSelection;
+			this->redrawBoard(""," ");
+			break;
+	}
+};
+
 void Game::run(){
 	this->redrawBoard("The first move is attackers'.");
-	while(this->gameState!=GameState::Aborted && this->gameState!=GameState::Resolved)
+	while(this->gameState!=GameState::Aborted && this->gameState!=GameState::Reset)
     {
     	this->handleInput();
-		if(!this->canPlayerMove(this->attackerTurn)){
+		
+		if(this->gameState!=GameState::Aborted && this->gameState!=GameState::Resolved && this->gameState!=GameState::Reset && !this->canPlayerMove(this->attackerTurn)){
 			this->redrawBoard(
-				std::string(((this->attackerTurn) ? "ATTACKERS" : "DEFENDERS")) + "CANNOT MOVE.",
-				std::string(((!this->attackerTurn) ? "Attackers" : "Defenders")) + " won!"
+				std::string(((this->attackerTurn) ? "ATTACKERS" : "DEFENDERS")) + " CANNOT MOVE. " +	((!this->attackerTurn) ? "Attackers" : "Defenders") + " won!"
 			);
 			this->gameState=GameState::Resolved;
 		}
+		if(this->gameState==GameState::Resolved){
+			this->redrawBoard("","Do you want to play again? (Y/N)");
+		}
+		
     }
+	
+	if(this->gameState==GameState::Reset){
+		this->initBoard();
+		this->gameState=GameState::AwaitingSelection;
+		this->attackerTurn = true;
+		this->selectedPos = Position(-1,-1);
+		this->indicatorPos = Position(0,0);
+		this->tr->setRefs(this->board, &this->indicatorPos, &this->selectedPos, &this->attackerTurn);
+		this->run();
+	}
+	
+
 
 }
 
