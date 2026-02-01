@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
 	ShowConsoleCursor(false);
 	SetCursor(NULL);
 	
-	Game * game = new Game(nullptr, true);
+	Game * game = new Game(nullptr);
 	game->run();
 		
 	ShowConsoleCursor(true);

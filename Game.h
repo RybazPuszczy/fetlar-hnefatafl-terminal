@@ -15,6 +15,7 @@ class Game
 		void run();
 	protected:
 		void debugCallback(int index);
+		void controlsCallback(int index);
 	private:
 		GameState gameState;
 		Marker ** board;

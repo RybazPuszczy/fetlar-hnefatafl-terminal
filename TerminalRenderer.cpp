@@ -29,25 +29,19 @@ void TerminalRenderer::reverseHighlight(int color){
 	SetConsoleTextAttribute(hConsole, Colors::BACKGROUND(Colors::BLACK,color));
 }
 
-TerminalRenderer::TerminalRenderer(Theme * theme, bool debug) 
-	: debug(debug){
+TerminalRenderer::TerminalRenderer(Theme * theme){
 	this->theme = (theme!=nullptr)? theme : new Theme();
-}
-
-TerminalRenderer::TerminalRenderer(bool debug) 
-	: TerminalRenderer(nullptr, debug) {}
-	
+}	
 
 TerminalRenderer::TerminalRenderer(
 		char borderH, char borderV, char borderI, 
 		char indicatorH, char indicatorV, 
 		const string& marginL, const string& marginR, 
-		Theme * theme, bool debug
+		Theme * theme
 	) 
 	: borderH(borderH), borderV(borderV), borderI(borderI), 
 	indicatorH(indicatorH), indicatorV(indicatorV), 
-	  marginL(marginL), marginR(marginR), 
-	  debug(debug){
+	  marginL(marginL), marginR(marginR) {
 	this->theme = (theme != nullptr) ? theme : new Theme();
 }
 
@@ -77,7 +71,7 @@ void TerminalRenderer::displayBorder(char row){
 	};
 	setColor(this->theme->defualtColor);
 	cout << this->marginR;
-	if(this->debug && this->debugCallbackRef) this->debugCallbackRef(2 * row);
+	if(this->rightsideCallbackRef) this->rightsideCallbackRef(2 * row);
 	cout << endl;
 };
 
@@ -111,7 +105,7 @@ void TerminalRenderer::displayFields(char row){
 	}
 	setColor(theme->defualtColor);
 	cout << this->marginR;
-	if(this->debug) this->debugCallbackRef(2*row + 1);
+	if(this->rightsideCallbackRef) this->rightsideCallbackRef(2*row + 1);
 	cout << endl;
 };
 
@@ -139,12 +133,12 @@ void TerminalRenderer::displayBoard(const string& comment1, const string& commen
 	cout << "\n";		
 };
 
-void TerminalRenderer::setRefs(Marker ** board, const Position * indicatorPos, const Position * selectedPos, const bool * attackerTurn, std::function<void(int)>& debugCallback){
+void TerminalRenderer::setRefs(Marker ** board, const Position * indicatorPos, const Position * selectedPos, const bool * attackerTurn, std::function<void(int)>& rightsideCallback){
 	this->boardRef = board;
 	this->indicatorPosRef = indicatorPos;
 	this->selectedPosRef = selectedPos;
 	this->attackerTurnRef = attackerTurn;
-	this->debugCallbackRef = debugCallback;
+	this->rightsideCallbackRef = rightsideCallback;
 }
 
 TerminalRenderer::~TerminalRenderer() {

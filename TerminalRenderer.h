@@ -19,7 +19,6 @@ class TerminalRenderer
 			marginL = "\t",
 			marginR = "\t\t";
 		
-		bool debug = false;
 		Theme * theme = nullptr;
 		
 		// game state refs		
@@ -27,7 +26,7 @@ class TerminalRenderer
 		const Position * indicatorPosRef = nullptr;
 		const Position * selectedPosRef = nullptr;
 		const bool * attackerTurnRef = nullptr;
-		std::function<void(int)> debugCallbackRef;
+		std::function<void(int)> rightsideCallbackRef;
 		
 		void setColor(int color);
 		void setColor(int color, bool highlight);
@@ -37,13 +36,12 @@ class TerminalRenderer
 		void displayFields(char row);
 	
 	public:
-		void setRefs(Marker ** board, const Position * indicatorPos, const Position * selectedPos, const bool * attackerTurn, std::function<void(int)>& debugCallback);
+		void setRefs(Marker ** board, const Position * indicatorPos, const Position * selectedPos, const bool * attackerTurn, std::function<void(int)>& rightsideCallback);
 		
-		TerminalRenderer(Theme * theme = nullptr, bool debug = false);
-		TerminalRenderer(bool debug);
-		
+		TerminalRenderer(Theme * theme = nullptr);
+//		TerminalRenderer();
 		TerminalRenderer(char borderH, char borderV, char borderI, char indicatorH, char indicatorV, 
-							const std::string& marginL, const std::string& marginR, Theme * theme = nullptr, bool debug = false);
+							const std::string& marginL, const std::string& marginR, Theme * theme = nullptr);
 		~TerminalRenderer();
 		
 		void clearScreen();

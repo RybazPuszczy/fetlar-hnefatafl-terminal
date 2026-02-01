@@ -17,15 +17,28 @@ void Game::debugCallback(int index){
 	std::cout << "                           "; // to "clear" after a redraw
 }
 
+void Game::controlsCallback(int index){
+	switch(index){
+		case 0: std::cout << "Welcome to Fetlar Hnefatafl"; break;
+		case 1: std::cout << "==========================="; break;
+		case 2: std::cout << "Controls:"; break;
+		case 3: std::cout << "ARROWS - move indicator"; break;
+		case 4: std::cout << "ENTER - confirm selection"; break;
+		case 5: std::cout << "ESC - cancel selection / exit"; break;
+		
+	};
+}
+
 Game::Game(Theme* theme, bool debugMode) 
     : indicatorPos(Position(0,0)), attackerTurn(true), debugMode(debugMode), gameState(GameState::AwaitingSelection){
 
 	this->theme = (theme!=nullptr) ? theme : new Theme();
-    this->tr = new TerminalRenderer(this->debugMode);
+    this->tr = new TerminalRenderer();
     
     std::function<void(int)> callbackRef = nullptr;
     
     if(this->debugMode) callbackRef = [this](int index) { this->debugCallback(index); };
+	else callbackRef = [this](int index) { this->controlsCallback(index); };
     
     initBoard();
     
@@ -131,7 +144,7 @@ void Game::tryCapture(Position pos){
 				&& this->areHostile(this->getMarker(pos+NESW[i]), this->getMarker(pos+NESW[i]+NESW[3]))
 			){
 				this->gameState = GameState::Resolved;
-				this->redrawBoard("THE KING HAS BEEN CAPTURED!","Attackers won!");
+				this->redrawBoard("THE KING HAS BEEN CAPTURED.","Attackers won!");
 			}
 		}else if(
 			isPiece(this->getMarker(pos+NESW[i]))
@@ -187,10 +200,7 @@ void Game::handleSelectionInput(char c){
 			
         	this->selectedPos = this->indicatorPos;
         	this->gameState = GameState::AwaitingMove;
-	        this->redrawBoard(
-				std::string("Selected: \"") + static_cast<char>(this->getMarker(this->selectedPos)) + "\" at column " + std::to_string(this->selectedPos.col) + ", row " + std::to_string(this->selectedPos.row),
-				""
-			);
+	        this->redrawBoard();
         	break;
         case ESC:
 			this->gameState = GameState::ExitPrompt;
@@ -222,10 +232,7 @@ void Game::handleMoveInput(char c){
 			this->redrawBoard();
 			break;
 		case ENTER:
-			{
 			if(selectedPos==indicatorPos) break;
-			
-			std::string comment2 = std::string("Moved: \"") + static_cast<char>(this->getMarker(this->selectedPos)) + "\" to column " + std::to_string(this->indicatorPos.col) + ", row " + std::to_string(this->indicatorPos.row);
 			this->cleanupCorpses();
 			this->moveMarker(this->selectedPos,this->indicatorPos);
 			this->tryCapture(this->indicatorPos);
@@ -235,10 +242,8 @@ void Game::handleMoveInput(char c){
     		this->attackerTurn = !this->attackerTurn; 
 			this->gameState = GameState::AwaitingSelection;
         	this->redrawBoard(
-				comment2,
 				std::string("Now it's ") + ((attackerTurn) ? "attackers'" : "defenders'") + " turn."
 			);
-			}
         	break;
         case ESC:
     		this->selectedPos = Position(-1,-1);
@@ -276,7 +281,7 @@ void Game::handleExitPromptInput(char c){
 };
 
 void Game::run(){
-	this->redrawBoard("","The first move is attackers'.");
+	this->redrawBoard("The first move is attackers'.");
 	while(this->gameState!=GameState::Aborted && this->gameState!=GameState::Resolved)
     {
     	this->handleInput();
