@@ -41,7 +41,7 @@ TerminalRenderer::TerminalRenderer(bool debug)
 TerminalRenderer::TerminalRenderer(
 		char borderH, char borderV, char borderI, 
 		char indicatorH, char indicatorV, 
-		string marginL, string marginR, 
+		const string& marginL, const string& marginR, 
 		Theme * theme, bool debug
 	) 
 	: borderH(borderH), borderV(borderV), borderI(borderI), 
@@ -115,21 +115,31 @@ void TerminalRenderer::displayFields(char row){
 	cout << endl;
 };
 
-void TerminalRenderer::displayBoard(){
-		for(char i=0;i<11;i++){
-		
+void TerminalRenderer::displayBoard(const string& comment1, const string& comment2){
+	for(char i=0;i<11;i++){
+	
 		if(i==0) displayBorder(i);
-		
+
 		displayFields(i);
-		
+	
 		displayBorder(i+1);		
 
-		if(i==10) displayHorizontalIndicator();
-		
+		if(i==10) displayHorizontalIndicator();	
 	};	
+	
+	if(!comment1.empty()){
+		cout << "                                                           \r"
+			<< comment1;
+	}
+	cout << "\n";
+	if(!comment2.empty()){
+		cout << "                                                           \r"
+			<< comment2;
+	}
+	cout << "\n";		
 };
 
-void TerminalRenderer::setRefs(Marker ** board, const Position * indicatorPos, const Position * selectedPos, const bool * attackerTurn, std::function<void(int)> debugCallback){
+void TerminalRenderer::setRefs(Marker ** board, const Position * indicatorPos, const Position * selectedPos, const bool * attackerTurn, std::function<void(int)>& debugCallback){
 	this->boardRef = board;
 	this->indicatorPosRef = indicatorPos;
 	this->selectedPosRef = selectedPos;

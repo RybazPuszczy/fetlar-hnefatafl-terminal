@@ -19,11 +19,16 @@ void ShowConsoleCursor(bool showFlag)
 
 int main(int argc, char** argv) {
 	
+	
+	HCURSOR hCursor = GetCursor();	
 	ShowConsoleCursor(false);
 	SetCursor(NULL);
 	
 	Game * game = new Game(nullptr, true);
 	game->run();
 		
+	ShowConsoleCursor(true);
+	SetCursor(hCursor);
+	
 	return 0;
 }

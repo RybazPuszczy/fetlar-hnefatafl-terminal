@@ -2,6 +2,14 @@
 #define MARKERS_H
 #include <iostream>
 
+enum class GameState {
+	AwaitingSelection,
+	AwaitingMove,
+	ExitPrompt,
+	Aborted,
+	Resolved
+};
+
 enum class Marker : char {
 	King 	= 'K',
 	Defender = 'd', // or 2 displays a ":)" (at least in my terminal)

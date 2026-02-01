@@ -15,6 +15,7 @@ class Game
 	protected:
 		void debugCallback(int index);
 	private:
+		GameState gameState;
 		Marker ** board;
 		Theme * theme;
 		TerminalRenderer * tr;
@@ -24,9 +25,13 @@ class Game
 		bool attackerTurn = true;
 		bool debugMode = false;
 		
+		int wrap(int val) const;
 		void initBoard();
-		void getInput();
-		void redrawBoard();
+		void handleInput();
+	    void handleSelectionInput(char c);
+	    void handleMoveInput(char c);
+	    void handleExitPromptInput(char c);
+		void redrawBoard(const std::string& comment1 = "", const std::string& comment2 = "");
 		
 };
 

@@ -2,9 +2,11 @@
 #include <windows.h>
 #include <conio.h>
 
-void Game::redrawBoard(){
+int Game::wrap(int val) const { return (val + 11) % 11; }
+
+void Game::redrawBoard(const std::string& comment1, const std::string& comment2){
 	this->tr->clearScreen();
-	this->tr->displayBoard();
+	this->tr->displayBoard(comment1, comment2);
 	Sleep(50);
 }
 
@@ -14,11 +16,11 @@ void Game::debugCallback(int index){
 		case 1: std::cout << "selectedPos: {" << this->selectedPos.col << ", " << this->selectedPos.row << "}"; break;
 		// ... Put some other debug values here
 	};
-	std::cout << "                           "; // to "clear" after redraw
+	std::cout << "                           "; // to "clear" after a redraw
 }
 
 Game::Game(Theme* theme, bool debugMode) 
-    : indicatorPos(Position(0,0)), attackerTurn(true), debugMode(debugMode){
+    : indicatorPos(Position(0,0)), attackerTurn(true), debugMode(debugMode), gameState(GameState::AwaitingSelection){
 
 	this->theme = (theme!=nullptr) ? theme : new Theme();
     this->tr = new TerminalRenderer(this->debugMode);
@@ -63,51 +65,117 @@ void Game::initBoard(){
 	}
 }
 
-void Game::run(){
-	redrawBoard();
-	char c = 0;
-	while(c!=ESC)
-    {
-        c = 0;
-        c=getch();
+void Game::handleInput(){
+	char c = getch();
+	switch(this->gameState){
+		case GameState::AwaitingSelection:
+			this->handleSelectionInput(c);
+			break;
+		case GameState::AwaitingMove:
+			this->handleMoveInput(c);
+			break;
+		case GameState::ExitPrompt:
+			this->handleExitPromptInput(c);
+    }
+}
 
-        switch(c) {
-        case KEY_UP:
-			this->indicatorPos.row = ((this->indicatorPos.row+11)-1)%11;
+void Game::handleSelectionInput(char c){
+	switch(c){
+		case KEY_UP:
+			this->indicatorPos.row = this->wrap(this->indicatorPos.row-1);
+			redrawBoard();
+			break;
+        case KEY_DOWN:
+			this->indicatorPos.row = this->wrap(this->indicatorPos.row+1);
+			redrawBoard();
+			break;
+        case KEY_RIGHT:
+			this->indicatorPos.col = this->wrap(this->indicatorPos.col+1);
+			redrawBoard();
+			break;
+        case KEY_LEFT:
+			this->indicatorPos.col = this->wrap(this->indicatorPos.col-1);
+			redrawBoard();
+			break;
+        case ENTER:
+        	this->selectedPos = this->indicatorPos;
+        	this->gameState = GameState::AwaitingMove;
+	        redrawBoard(
+				std::string("Now it's ") + ((attackerTurn) ? "attackers'" : "defenders'") + " turn.",
+				std::string("Selected: \"") + static_cast<char>(this->board[selectedPos.col][selectedPos.row]) + "\" at column " + std::to_string(this->selectedPos.col) + ", row " + std::to_string(this->selectedPos.row)
+			);
+        	break;
+        case ESC:
+//			this->gameState = GameState::Aborted;
+			this->gameState = GameState::ExitPrompt;
+			redrawBoard("","Are you sure you want to quit? (Y/N)");
+			break;
+	}
+            
+};
+void Game::handleMoveInput(char c){
+	switch(c){
+		case KEY_UP:
+			this->indicatorPos.col = this->selectedPos.col;
+			this->indicatorPos.row = this->wrap(this->indicatorPos.row-1);
 			redrawBoard();
             break;
         case KEY_DOWN:
-			this->indicatorPos.row = ((this->indicatorPos.row+11)+1)%11;
+			this->indicatorPos.col = this->selectedPos.col;
+			this->indicatorPos.row = this->wrap(this->indicatorPos.row+1);
 			redrawBoard();
             break;
         case KEY_RIGHT:
-			this->indicatorPos.col = ((this->indicatorPos.col+11)+1)%11;
+			this->indicatorPos.row = this->selectedPos.row;
+			this->indicatorPos.col = this->wrap(this->indicatorPos.col+1);
 			redrawBoard();
             break;
         case KEY_LEFT:
-			this->indicatorPos.col = ((this->indicatorPos.col+11)-1)%11;
+			this->indicatorPos.row = this->selectedPos.row;
+			this->indicatorPos.col = this->wrap(this->indicatorPos.col-1);
 			redrawBoard();
-            break;
-        case ENTER:
-        	if(this->isSelectionEmpty()){
-	        	this->selectedPos = this->indicatorPos;
-	        	std::cout << "Selected: \"" << this->board[selectedPos.col][selectedPos.row] << "\" at column " << this->selectedPos.col << ", row " << this->selectedPos.row << "\t\t\n"; 
-			}else{				
-	        	std::cout << "Moved: \"" << this->board[selectedPos.col][selectedPos.row] << "\" to column " << this->indicatorPos.col << ", row " << this->indicatorPos.row << "\t\t\n"; 
-	        	this->selectedPos= Position(-1,-1);
-        		this->attackerTurn = !this->attackerTurn;
-			}
-        	std::cout << "Now it's " << ((attackerTurn) ? "attackers'" : "defenders'") << " turn."; 
-        	redrawBoard();
-            break;
-        case ESC:
-        	if(!this->isSelectionEmpty()) {
-        		this->selectedPos= Position(-1,-1);
-        		c = 0;
-        		redrawBoard();
+			break;
+		case ENTER:
+			{
+			std::string comment2 = std::string("Moved: \"") + static_cast<char>(this->board[selectedPos.col][selectedPos.row]) + "\" to column " + std::to_string(this->indicatorPos.col) + ", row " + std::to_string(this->indicatorPos.row);
+        	this->selectedPos = Position(-1,-1);
+    		this->attackerTurn = !this->attackerTurn; 
+			this->gameState = GameState::AwaitingSelection;
+        	redrawBoard(
+				std::string("Now it's ") + ((attackerTurn) ? "attackers'" : "defenders'") + " turn.",
+				comment2
+			);
 			}
         	break;
-        }
+        case ESC:
+    		this->selectedPos = Position(-1,-1);
+    		this->gameState = GameState::AwaitingSelection;
+			redrawBoard();
+    		break;
+	}
+};
+
+void Game::handleExitPromptInput(char c){
+	switch(c){
+		case 'Y':
+		case 'y':
+		case ENTER:
+			this->gameState=GameState::Aborted;
+			break;
+		case 'N':
+		case 'n':
+		case ESC:
+			this->gameState=GameState::AwaitingSelection;
+			this->redrawBoard(""," ");
+			break;
+	}
+};
+
+void Game::run(){
+	redrawBoard();
+	while(this->gameState!=GameState::Aborted)
+    {
+    	this->handleInput();
     }
 }
 

@@ -37,15 +37,15 @@ class TerminalRenderer
 		void displayFields(char row);
 	
 	public:
-		void setRefs(Marker ** board, const Position * indicatorPos, const Position * selectedPos, const bool * attackerTurn, std::function<void(int)> debugCallback);
+		void setRefs(Marker ** board, const Position * indicatorPos, const Position * selectedPos, const bool * attackerTurn, std::function<void(int)>& debugCallback);
 		
 		TerminalRenderer(Theme * theme = nullptr, bool debug = false);
 		TerminalRenderer(bool debug);
 		
 		TerminalRenderer(char borderH, char borderV, char borderI, char indicatorH, char indicatorV, 
-							std::string marginL, std::string marginR, Theme * theme = nullptr, bool debug = false);
+							const std::string& marginL, const std::string& marginR, Theme * theme = nullptr, bool debug = false);
 		void clearScreen();
-		void displayBoard();
+		void displayBoard(const std::string& comment1, const std::string& comment2);
 };
 
 #endif
