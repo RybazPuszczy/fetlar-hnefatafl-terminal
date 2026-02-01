@@ -33,6 +33,8 @@ inline bool isPiece(Marker m) { return isAttacker(m) || isDefender(m); }
 
 inline bool isEmpty(Marker m) { return m == Marker::Empty || m == Marker::Captured; }
 
+inline bool canEnter(Marker who, Marker where){	return isEmpty(where) || isRestricted(where) && isKing(who); } 
+
 inline std::ostream& operator<<(std::ostream& os, Marker m) {
     return os << static_cast<char>(m);
 }

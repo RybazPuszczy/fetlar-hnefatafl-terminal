@@ -28,11 +28,16 @@ class Game
 		
 		void initBoard();
 		
-		int wrap(int val) const;
-		Position wrap(Position pos) const;
+		inline int wrap(int val) const { return (val + 11) % 11; }
+		inline Position wrap(Position pos) const { return Position(wrap(pos.row), wrap(pos.col)); }
+
 		bool areFriendly(Marker m1, Marker m2) const;
 		bool areHostile(Marker m1, Marker m2) const;
-		Marker getMarker(Position pos);
+		bool canPieceMove(Position pos) const;
+		bool canPlayerMove(bool attacker) const;
+		Marker getMarker(Position pos) const;
+		
+		
 		void setMarker(Marker m, Position pos);
 		void moveMarker(Position from, Position to);
 		

@@ -146,3 +146,7 @@ void TerminalRenderer::setRefs(Marker ** board, const Position * indicatorPos, c
 	this->attackerTurnRef = attackerTurn;
 	this->debugCallbackRef = debugCallback;
 }
+
+TerminalRenderer::~TerminalRenderer() {
+    delete theme;
+}

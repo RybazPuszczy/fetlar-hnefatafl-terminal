@@ -2,9 +2,6 @@
 #include <windows.h>
 #include <conio.h>
 
-int Game::wrap(int val) const { return (val + 11) % 11; }
-Position Game::wrap(Position pos) const { return Position(wrap(pos.row), wrap(pos.col)); }
-
 void Game::redrawBoard(const std::string& comment1, const std::string& comment2){
 	this->tr->clearScreen();
 	this->tr->displayBoard(comment1, comment2);
@@ -66,12 +63,7 @@ void Game::initBoard(){
 	}
 }
 
-//void Game::moveMarkerToIndicator(){
-//	this->board[this->indicatorPos.row][this->indicatorPos.col] = this->board[this->selectedPos.row][this->selectedPos.col];
-//	this->board[this->selectedPos.row][this->selectedPos.col] = Marker::Empty;
-//}
-
-Marker Game::getMarker(Position pos){ 
+Marker Game::getMarker(Position pos) const{ 
 	if(pos.row > 10 || pos.row < 0 || pos.col > 10 || pos.col < 0){
 		return Marker::Edge;
 	}
@@ -94,6 +86,26 @@ bool Game::areHostile(Marker m1, Marker m2) const{ // for checking for captures
 		|| isDefender(m1) && isAttacker(m2) 
 		|| (isRestricted(m1) xor isRestricted(m2)) && ( isPiece(m1)&&!isKing(m1) xor isPiece(m2)&&!isKing(m2) ) // edges, corners and throne are hostile and take part in captures too.
 	);
+}
+
+bool Game::canPieceMove(Position pos) const{
+	Position NESW[4] = {Position(-1,0), Position(0,1), Position(1,0), Position(0,-1)};
+	for(int i=0; i<4; i++){
+		if(canEnter(this->getMarker(pos), this->getMarker(pos+NESW[i]))) return true;
+	}
+	return false;
+}
+
+bool Game::canPlayerMove(bool attacker) const{
+	for(int i=0;i<11;i++) for(int j=0;j<11;j++){
+		if(
+			attacker && isAttacker(this->getMarker(Position(i,j))) 
+			|| !attacker && isDefender(this->getMarker(Position(i,j)))
+		){
+			if(canPieceMove(Position(i,j))) return true;
+		}
+	}
+	return false;	
 }
 
 void Game::tryCapture(Position pos){
@@ -141,19 +153,19 @@ void Game::handleSelectionInput(char c){
 	switch(c){
 		case KEY_UP:
 			this->indicatorPos = wrap(this->indicatorPos+Position(-1,0));
-			redrawBoard();
+			this->redrawBoard();
 			break;
         case KEY_DOWN:
 			this->indicatorPos = wrap(this->indicatorPos+Position(1,0));
-			redrawBoard();
+			this->redrawBoard();
 			break;
         case KEY_RIGHT:
 			this->indicatorPos = wrap(this->indicatorPos+Position(0,1));
-			redrawBoard();
+			this->redrawBoard();
 			break;
         case KEY_LEFT:
 			this->indicatorPos = wrap(this->indicatorPos+Position(0,-1));
-			redrawBoard();
+			this->redrawBoard();
 			break;
         case ENTER:
         	if(
@@ -163,14 +175,14 @@ void Game::handleSelectionInput(char c){
 			
         	this->selectedPos = this->indicatorPos;
         	this->gameState = GameState::AwaitingMove;
-	        redrawBoard(
+	        this->redrawBoard(
 				std::string("Selected: \"") + static_cast<char>(this->getMarker(this->selectedPos)) + "\" at column " + std::to_string(this->selectedPos.col) + ", row " + std::to_string(this->selectedPos.row),
 				""
 			);
         	break;
         case ESC:
 			this->gameState = GameState::ExitPrompt;
-			redrawBoard("","Are you sure you want to quit? (Y/N)");
+			this->redrawBoard("","Are you sure you want to quit? (Y/N)");
 			break;
 	}
             
@@ -205,7 +217,7 @@ void Game::handleMoveInput(char c){
 			this->cleanupCorpses();
 			this->moveMarker(this->selectedPos,this->indicatorPos);
 			this->tryCapture(this->indicatorPos);
-    		if(this->gameState==GameState::Resolved) break;
+			if(this->gameState==GameState::Resolved) break;
         	this->selectedPos = Position(-1,-1);
     		this->attackerTurn = !this->attackerTurn; 
 			this->gameState = GameState::AwaitingSelection;
@@ -224,8 +236,7 @@ void Game::handleMoveInput(char c){
 	//moves indicator back if move to the field is illegal. With sleep in redraw it makes a nice bounce-back effect.
 	if(!(
 		this->indicatorPos == this->selectedPos 
-		|| isEmpty(this->getMarker(this->indicatorPos))
-		|| isRestricted(this->getMarker(this->indicatorPos)) && isKing(this->getMarker(this->selectedPos))
+		|| canEnter(this->getMarker(this->selectedPos), this->getMarker(this->indicatorPos))
 	)) switch(c){
 		case KEY_UP: handleMoveInput(KEY_DOWN); break;
 		case KEY_DOWN: handleMoveInput(KEY_UP); break;
@@ -252,16 +263,23 @@ void Game::handleExitPromptInput(char c){
 };
 
 void Game::run(){
-	redrawBoard("","The first move is attackers'.");
+	this->redrawBoard("","The first move is attackers'.");
 	while(this->gameState!=GameState::Aborted && this->gameState!=GameState::Resolved)
     {
     	this->handleInput();
+		if(!this->canPlayerMove(this->attackerTurn)){
+			this->redrawBoard(
+				std::string(((this->attackerTurn) ? "ATTACKERS" : "DEFENDERS")) + "CANNOT MOVE.",
+				std::string(((!this->attackerTurn) ? "Attackers" : "Defenders")) + " won!"
+			);
+			this->gameState=GameState::Resolved;
+		}
     }
 
 }
 
 Game::~Game(){
-	delete[] theme;
+	delete tr;
 	for(int i=0;i<11;i++) delete[] board[i];
 	delete[] board;
 }

@@ -44,6 +44,8 @@ class TerminalRenderer
 		
 		TerminalRenderer(char borderH, char borderV, char borderI, char indicatorH, char indicatorV, 
 							const std::string& marginL, const std::string& marginR, Theme * theme = nullptr, bool debug = false);
+		~TerminalRenderer();
+		
 		void clearScreen();
 		void displayBoard(const std::string& comment1, const std::string& comment2);
 };

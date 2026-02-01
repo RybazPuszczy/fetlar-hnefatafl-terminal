@@ -20,7 +20,8 @@ void ShowConsoleCursor(bool showFlag)
 int main(int argc, char** argv) {
 	
 	
-	HCURSOR hCursor = GetCursor();	
+	HCURSOR hCursor = GetCursor();
+	
 	ShowConsoleCursor(false);
 	SetCursor(NULL);
 	
