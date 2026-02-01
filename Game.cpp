@@ -3,6 +3,7 @@
 #include <conio.h>
 
 int Game::wrap(int val) const { return (val + 11) % 11; }
+Position Game::wrap(Position pos) const { return Position(wrap(pos.row), wrap(pos.col)); }
 
 void Game::redrawBoard(const std::string& comment1, const std::string& comment2){
 	this->tr->clearScreen();
@@ -65,6 +66,36 @@ void Game::initBoard(){
 	}
 }
 
+//void Game::moveMarkerToIndicator(){
+//	this->board[this->indicatorPos.row][this->indicatorPos.col] = this->board[this->selectedPos.row][this->selectedPos.col];
+//	this->board[this->selectedPos.row][this->selectedPos.col] = Marker::Empty;
+//}
+
+Marker Game::getMarker(Position pos){ 
+	if(pos.row > 10 || pos.row < 0 || pos.col > 10 || pos.col < 0){
+		return Marker::Wall;
+	}
+	return this->board[pos.row][pos.col]; 
+}
+
+void Game::setMarker(Marker m, Position pos){ this->board[pos.row][pos.col] = m; }
+
+void Game::moveMarker(Position from, Position to){
+	if(from==to) return;
+	setMarker(getMarker(from),to);
+	if(from == Position(5,5)) setMarker(Marker::Throne,from); else setMarker(Marker::Empty,from);
+}
+
+bool Game::areFriendly(Marker m1, Marker m2) const { return ( isAttacker(m1) && isAttacker(m2) || isDefender(m1) && isDefender(m2) ); }
+// not being friendly nor hostile means being neutral.
+bool Game::areHostile(Marker m1, Marker m2) const{ // for checking for captures
+	return (
+		isAttacker(m1) && isDefender(m2) 
+		|| isDefender(m1) && isAttacker(m2) 
+		|| ((m1==Marker::Throne xor m2==Marker::Throne) || (m1==Marker::Wall xor m2==Marker::Wall)) && ( isPiece(m1) xor isPiece(m2) ) // walls and throne are hostile and take part in captures too.
+	);
+}
+
 void Game::handleInput(){
 	char c = getch();
 	switch(this->gameState){
@@ -82,27 +113,32 @@ void Game::handleInput(){
 void Game::handleSelectionInput(char c){
 	switch(c){
 		case KEY_UP:
-			this->indicatorPos.row = this->wrap(this->indicatorPos.row-1);
+			this->indicatorPos = wrap(this->indicatorPos+Position(-1,0));
 			redrawBoard();
 			break;
         case KEY_DOWN:
-			this->indicatorPos.row = this->wrap(this->indicatorPos.row+1);
+			this->indicatorPos = wrap(this->indicatorPos+Position(1,0));
 			redrawBoard();
 			break;
         case KEY_RIGHT:
-			this->indicatorPos.col = this->wrap(this->indicatorPos.col+1);
+			this->indicatorPos = wrap(this->indicatorPos+Position(0,1));
 			redrawBoard();
 			break;
         case KEY_LEFT:
-			this->indicatorPos.col = this->wrap(this->indicatorPos.col-1);
+			this->indicatorPos = wrap(this->indicatorPos+Position(0,-1));
 			redrawBoard();
 			break;
         case ENTER:
+        	if(
+				! (isAttacker(this->getMarker(this->indicatorPos)) && this->attackerTurn)
+				&& ! (isDefender(this->getMarker(this->indicatorPos)) && !this->attackerTurn)
+			) break;
+			
         	this->selectedPos = this->indicatorPos;
         	this->gameState = GameState::AwaitingMove;
 	        redrawBoard(
-				std::string("Now it's ") + ((attackerTurn) ? "attackers'" : "defenders'") + " turn.",
-				std::string("Selected: \"") + static_cast<char>(this->board[selectedPos.col][selectedPos.row]) + "\" at column " + std::to_string(this->selectedPos.col) + ", row " + std::to_string(this->selectedPos.row)
+				std::string("Selected: \"") + static_cast<char>(this->getMarker(this->selectedPos)) + "\" at column " + std::to_string(this->selectedPos.col) + ", row " + std::to_string(this->selectedPos.row),
+				""
 			);
         	break;
         case ESC:
@@ -117,33 +153,36 @@ void Game::handleMoveInput(char c){
 	switch(c){
 		case KEY_UP:
 			this->indicatorPos.col = this->selectedPos.col;
-			this->indicatorPos.row = this->wrap(this->indicatorPos.row-1);
+			this->indicatorPos = this->indicatorPos+Position(-1,0);
 			redrawBoard();
             break;
         case KEY_DOWN:
 			this->indicatorPos.col = this->selectedPos.col;
-			this->indicatorPos.row = this->wrap(this->indicatorPos.row+1);
+			this->indicatorPos = this->indicatorPos+Position(1,0);
 			redrawBoard();
             break;
         case KEY_RIGHT:
 			this->indicatorPos.row = this->selectedPos.row;
-			this->indicatorPos.col = this->wrap(this->indicatorPos.col+1);
+			this->indicatorPos = this->indicatorPos+Position(0,1);
 			redrawBoard();
             break;
         case KEY_LEFT:
 			this->indicatorPos.row = this->selectedPos.row;
-			this->indicatorPos.col = this->wrap(this->indicatorPos.col-1);
+			this->indicatorPos = this->indicatorPos+Position(0,-1);
 			redrawBoard();
 			break;
 		case ENTER:
 			{
-			std::string comment2 = std::string("Moved: \"") + static_cast<char>(this->board[selectedPos.col][selectedPos.row]) + "\" to column " + std::to_string(this->indicatorPos.col) + ", row " + std::to_string(this->indicatorPos.row);
+			if(selectedPos==indicatorPos) break;
+			
+			std::string comment2 = std::string("Moved: \"") + static_cast<char>(this->getMarker(this->selectedPos)) + "\" to column " + std::to_string(this->indicatorPos.col) + ", row " + std::to_string(this->indicatorPos.row);
+			moveMarker(this->selectedPos,this->indicatorPos);
         	this->selectedPos = Position(-1,-1);
     		this->attackerTurn = !this->attackerTurn; 
 			this->gameState = GameState::AwaitingSelection;
         	redrawBoard(
-				std::string("Now it's ") + ((attackerTurn) ? "attackers'" : "defenders'") + " turn.",
-				comment2
+				comment2,
+				std::string("Now it's ") + ((attackerTurn) ? "attackers'" : "defenders'") + " turn."
 			);
 			}
         	break;
@@ -153,6 +192,17 @@ void Game::handleMoveInput(char c){
 			redrawBoard();
     		break;
 	}
+	if(!(
+		this->indicatorPos == this->selectedPos 
+		|| this->getMarker(this->indicatorPos)==Marker::Empty
+		|| ( (this->getMarker(this->indicatorPos)==Marker::Throne || this->getMarker(this->indicatorPos)==Marker::Corner) && this->getMarker(this->selectedPos)==Marker::King )
+	)) switch(c){
+		case KEY_UP: handleMoveInput(KEY_DOWN); break;
+		case KEY_DOWN: handleMoveInput(KEY_UP); break;
+		case KEY_LEFT: handleMoveInput(KEY_RIGHT); break;
+		case KEY_RIGHT: handleMoveInput(KEY_LEFT); break;
+	}
+			
 };
 
 void Game::handleExitPromptInput(char c){
@@ -172,7 +222,7 @@ void Game::handleExitPromptInput(char c){
 };
 
 void Game::run(){
-	redrawBoard();
+	redrawBoard("","The first move is attackers'.");
 	while(this->gameState!=GameState::Aborted)
     {
     	this->handleInput();

@@ -2,6 +2,7 @@
 #define GAME_H
 
 #include "Theme.h"
+#include "Types.h"
 #include "TerminalRenderer.h"
 
 #include <functional>
@@ -25,8 +26,17 @@ class Game
 		bool attackerTurn = true;
 		bool debugMode = false;
 		
-		int wrap(int val) const;
 		void initBoard();
+		
+		int wrap(int val) const;
+		Position wrap(Position pos) const;
+		bool areFriendly(Marker m1, Marker m2) const;
+		bool areHostile(Marker m1, Marker m2) const;
+		Marker getMarker(Position pos);
+		void setMarker(Marker m, Position pos);
+		void moveMarker(Position from, Position to);
+		
+		
 		void handleInput();
 	    void handleSelectionInput(char c);
 	    void handleMoveInput(char c);
