@@ -19,7 +19,7 @@ struct Theme
 		this->markerColors[Marker::Throne]		= WHITE;
 		this->markerColors[Marker::Corner]		= CYAN;
 		this->markerColors[Marker::Wall]		= GRAY;
-		this->markerColors[Marker::Captured]		= WHITE;		
+		this->markerColors[Marker::Captured]	= WHITE;		
 		
 		this->borderColor = GRAY;
 		this->indicatorColor = WHITE;

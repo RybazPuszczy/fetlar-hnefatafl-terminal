@@ -18,7 +18,7 @@ enum class Marker : char {
 	Throne = '#',
     Corner  = '~',
     Wall  = 'W',
-    Captured = 'x'
+    Captured = '.'
 };
 
 inline bool isAttacker(Marker m) { return m == Marker::Attacker; }

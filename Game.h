@@ -36,6 +36,8 @@ class Game
 		void setMarker(Marker m, Position pos);
 		void moveMarker(Position from, Position to);
 		
+		void tryCapture(Position pos);
+		void cleanupCorpses();
 		
 		void handleInput();
 	    void handleSelectionInput(char c);

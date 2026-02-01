@@ -92,8 +92,35 @@ bool Game::areHostile(Marker m1, Marker m2) const{ // for checking for captures
 	return (
 		isAttacker(m1) && isDefender(m2) 
 		|| isDefender(m1) && isAttacker(m2) 
-		|| (isRestricted(m1) xor isRestricted(m2) || (m1==Marker::Wall xor m2==Marker::Wall)) && ( isPiece(m1) xor isPiece(m2) ) // walls, corners and throne are hostile and take part in captures too.
+		|| (isRestricted(m1) xor isRestricted(m2)) && ( isPiece(m1)&&!isKing(m1) xor isPiece(m2)&&!isKing(m2) ) // walls, corners and throne are hostile and take part in captures too.
 	);
+}
+
+void Game::tryCapture(Position pos){
+	Position NESW[4] = {Position(-1,0), Position(0,1), Position(1,0), Position(0,-1)};
+	for(int i=0; i<4; i++){
+		if(this->attackerTurn && isKing(this->getMarker(pos+NESW[i]))){
+			if(
+				this->areHostile(this->getMarker(pos+NESW[i]), this->getMarker(pos+NESW[i]+NESW[0]))
+				&& this->areHostile(this->getMarker(pos+NESW[i]), this->getMarker(pos+NESW[i]+NESW[1]))
+				&& this->areHostile(this->getMarker(pos+NESW[i]), this->getMarker(pos+NESW[i]+NESW[2]))
+				&& this->areHostile(this->getMarker(pos+NESW[i]), this->getMarker(pos+NESW[i]+NESW[3]))
+			){
+				this->gameState = GameState::Resolved;
+				this->redrawBoard("THE KING HAS BEEN CAPTURED!","Attackers won!");
+			}
+		}else if(
+			isPiece(this->getMarker(pos+NESW[i]))
+			&& this->areHostile(this->getMarker(pos), this->getMarker(pos+NESW[i]))
+			&& this->areHostile(this->getMarker(pos+NESW[i]), this->getMarker(pos+NESW[i]+NESW[i]))
+		){
+			setMarker(Marker::Captured, pos+NESW[i]);
+		}
+	}
+}
+
+void Game::cleanupCorpses(){
+	for(int i=0;i<11;i++) for(int j=0;j<11;j++) if(this->board[i][j] == Marker::Captured) this->board[i][j] = Marker::Empty;
 }
 
 void Game::handleInput(){
@@ -153,33 +180,36 @@ void Game::handleMoveInput(char c){
 		case KEY_UP:
 			this->indicatorPos.col = this->selectedPos.col;
 			this->indicatorPos = this->indicatorPos+Position(-1,0);
-			redrawBoard();
+			this->redrawBoard();
             break;
         case KEY_DOWN:
 			this->indicatorPos.col = this->selectedPos.col;
 			this->indicatorPos = this->indicatorPos+Position(1,0);
-			redrawBoard();
+			this->redrawBoard();
             break;
         case KEY_RIGHT:
 			this->indicatorPos.row = this->selectedPos.row;
 			this->indicatorPos = this->indicatorPos+Position(0,1);
-			redrawBoard();
+			this->redrawBoard();
             break;
         case KEY_LEFT:
 			this->indicatorPos.row = this->selectedPos.row;
 			this->indicatorPos = this->indicatorPos+Position(0,-1);
-			redrawBoard();
+			this->redrawBoard();
 			break;
 		case ENTER:
 			{
 			if(selectedPos==indicatorPos) break;
 			
 			std::string comment2 = std::string("Moved: \"") + static_cast<char>(this->getMarker(this->selectedPos)) + "\" to column " + std::to_string(this->indicatorPos.col) + ", row " + std::to_string(this->indicatorPos.row);
-			moveMarker(this->selectedPos,this->indicatorPos);
+			this->cleanupCorpses();
+			this->moveMarker(this->selectedPos,this->indicatorPos);
+			this->tryCapture(this->indicatorPos);
+    		if(this->gameState==GameState::Resolved) break;
         	this->selectedPos = Position(-1,-1);
     		this->attackerTurn = !this->attackerTurn; 
 			this->gameState = GameState::AwaitingSelection;
-        	redrawBoard(
+        	this->redrawBoard(
 				comment2,
 				std::string("Now it's ") + ((attackerTurn) ? "attackers'" : "defenders'") + " turn."
 			);
@@ -188,7 +218,7 @@ void Game::handleMoveInput(char c){
         case ESC:
     		this->selectedPos = Position(-1,-1);
     		this->gameState = GameState::AwaitingSelection;
-			redrawBoard();
+			this->redrawBoard();
     		break;
 	}
 	//moves indicator back if move to the field is illegal. With sleep in redraw it makes a nice bounce-back effect.
@@ -223,10 +253,11 @@ void Game::handleExitPromptInput(char c){
 
 void Game::run(){
 	redrawBoard("","The first move is attackers'.");
-	while(this->gameState!=GameState::Aborted)
+	while(this->gameState!=GameState::Aborted && this->gameState!=GameState::Resolved)
     {
     	this->handleInput();
     }
+
 }
 
 Game::~Game(){

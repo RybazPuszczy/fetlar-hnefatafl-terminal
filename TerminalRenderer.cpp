@@ -90,7 +90,7 @@ void TerminalRenderer::displayFields(char row){
 			setColor(theme->borderColor);
 			cout << this->borderV;
 		}
-		if(this->boardRef[row][col] == Marker::Empty){		
+		if(isEmpty(this->boardRef[row][col])){		
 			setColor(this->theme->markerColors[(*this->attackerTurnRef)? Marker::Attacker : Marker::Defender], isFieldIndicated || isFieldSelected);
 		}else{
 			setColor(this->theme->markerColors[this->boardRef[row][col]], isFieldIndicated || isFieldSelected);
