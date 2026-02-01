@@ -73,7 +73,7 @@ void Game::initBoard(){
 
 Marker Game::getMarker(Position pos){ 
 	if(pos.row > 10 || pos.row < 0 || pos.col > 10 || pos.col < 0){
-		return Marker::Wall;
+		return Marker::Edge;
 	}
 	return this->board[pos.row][pos.col]; 
 }
@@ -92,7 +92,7 @@ bool Game::areHostile(Marker m1, Marker m2) const{ // for checking for captures
 	return (
 		isAttacker(m1) && isDefender(m2) 
 		|| isDefender(m1) && isAttacker(m2) 
-		|| (isRestricted(m1) xor isRestricted(m2)) && ( isPiece(m1)&&!isKing(m1) xor isPiece(m2)&&!isKing(m2) ) // walls, corners and throne are hostile and take part in captures too.
+		|| (isRestricted(m1) xor isRestricted(m2)) && ( isPiece(m1)&&!isKing(m1) xor isPiece(m2)&&!isKing(m2) ) // edges, corners and throne are hostile and take part in captures too.
 	);
 }
 

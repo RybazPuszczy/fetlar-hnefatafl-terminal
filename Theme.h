@@ -18,7 +18,7 @@ struct Theme
 		this->markerColors[Marker::Empty]		= WHITE;
 		this->markerColors[Marker::Throne]		= WHITE;
 		this->markerColors[Marker::Corner]		= CYAN;
-		this->markerColors[Marker::Wall]		= GRAY;
+		this->markerColors[Marker::Edge]		= GRAY;
 		this->markerColors[Marker::Captured]	= WHITE;		
 		
 		this->borderColor = GRAY;

@@ -17,7 +17,7 @@ enum class Marker : char {
 	Empty = ' ',
 	Throne = '#',
     Corner  = '~',
-    Wall  = 'W',
+    Edge  = 'E',
     Captured = '.'
 };
 
