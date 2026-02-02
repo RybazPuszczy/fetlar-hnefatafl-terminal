@@ -288,10 +288,18 @@ void Game::handleMoveInput(char c){
 		this->indicatorPos == this->selectedPos 
 		|| canEnter(this->getMarker(this->selectedPos), this->getMarker(this->indicatorPos))
 	)) switch(c){
+		case 'W':
+		case 'w':
 		case KEY_UP: handleMoveInput(KEY_DOWN); break;
+        case 's':
+        case 'S':
 		case KEY_DOWN: handleMoveInput(KEY_UP); break;
-		case KEY_LEFT: handleMoveInput(KEY_RIGHT); break;
-		case KEY_RIGHT: handleMoveInput(KEY_LEFT); break;
+		case 'a':
+        case 'A':
+        case KEY_LEFT: handleMoveInput(KEY_RIGHT); break;
+		case 'd':
+        case 'D':
+        case KEY_RIGHT: handleMoveInput(KEY_LEFT); break;
 	}
 			
 };
